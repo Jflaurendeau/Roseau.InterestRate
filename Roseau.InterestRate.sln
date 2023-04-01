@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33516.290
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Roseau.InterestRate", "src\Roseau.InterestRate\Roseau.InterestRate.csproj", "{D07732EA-431D-410F-BBE1-1058EB1FC5DE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Roseau.InterestRate.UnitTests", "tests\Roseau.InterestRate.UnitTests\Roseau.InterestRate.UnitTests.csproj", "{A4179482-DA58-431B-A7CD-DE8F3B893007}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D07732EA-431D-410F-BBE1-1058EB1FC5DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D07732EA-431D-410F-BBE1-1058EB1FC5DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D07732EA-431D-410F-BBE1-1058EB1FC5DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D07732EA-431D-410F-BBE1-1058EB1FC5DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4179482-DA58-431B-A7CD-DE8F3B893007}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4179482-DA58-431B-A7CD-DE8F3B893007}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4179482-DA58-431B-A7CD-DE8F3B893007}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4179482-DA58-431B-A7CD-DE8F3B893007}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D4C63455-5766-4DCB-936B-C3C2A54891C5}
+	EndGlobalSection
+EndGlobal
