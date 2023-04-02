@@ -1,0 +1,31 @@
+﻿name: Continuous Deployment ♾️🚀
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  Pack-and-Publish:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out code 👀
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Restore packages and dependencies 📥📦
+        run: dotnet restore
+
+      - name: Build For Release 👷‍♀🏗️
+        run: dotnet build -c Release --no-restore
+
+      - name: Run tests 🩺🔬🧑‍🔬
+        run: dotnet test -c Release --no-restore
+
+      - name: Pack the package
+        run: dotnet pack .\src\Roseau.InterestRate\Roseau.InterestRate.csproj -c Release --no-restore --output .\src\Roseau.InterestRate\nupkgs
+
+      - name: Publish the package
+        run: dotnet nuget push .\src\Roseau.InterestRate\nupkgs\*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate
