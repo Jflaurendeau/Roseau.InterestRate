@@ -7,6 +7,57 @@ namespace Roseau.InterestRate.UnitTests.Aggregates.Rate;
 public class AnnualizedRatesTest
 {
 	[TestMethod]
+	public void AnnualizedRates_PassingIEnumerableWithNull_ThrowsArgumentNullException()
+	{
+		// Arrange
+		DateOnly calculationDate = new(2022, 5, 5);
+		AnnualizedRate[] rates = new AnnualizedRate[]
+		{
+				new(0.01m, 10m),
+				default!,
+				new(0.07m, 1m),
+				new(0.11m, 14m)
+		};
+
+		// Act
+
+		// Assert
+		Assert.ThrowsException<ArgumentNullException>(() => new AnnualizedRates(calculationDate, rates));
+
+	}
+	[TestMethod]
+	public void Rates_PropertyReturnsSameRate_ReturnTrue()
+	{
+		// Arrange
+		DateOnly calculationDate = new(2022, 5, 5);
+		AnnualizedRate[] rates = new AnnualizedRate[]
+		{
+				new(0.01m, 10m),
+				new(0.05m, 1 / 24m),
+				new(0.07m, 1m),
+				new(0.11m, 14m)
+		};
+		DateOnly[] paymentDates = new DateOnly[]
+		{
+				calculationDate.AddYears(0.3m),
+				calculationDate.AddYears(0.5m),
+				calculationDate.AddYears(0.6m),
+				calculationDate.AddYears(15m),
+		};
+		OrderedDates dates = new(paymentDates);
+		AnnualizedRates annualizedRates = new(calculationDate, rates);
+
+		// Act
+		var rates2 = annualizedRates.Rates;
+
+		// Assert
+		for (int i = 0; i < rates.Length; i++)
+		{
+			Assert.AreEqual(rates[i], rates2.ElementAt(i));
+		}
+
+	}
+	[TestMethod]
 	public void DiscountFactorArray_RatesWithPeriodsShorterAndLongerThenPaymentDateInterval_ReturnsTrue()
 	{
 		// Arrange
@@ -128,6 +179,62 @@ public class AnnualizedRatesTest
 
 	}
 	[TestMethod]
+	public void DiscountFactor_PaymentDateIsBeforeCalculationDate_ThrowsArgumentOutOfRange()
+	{
+		// Arrange
+		DateOnly calculationDate = new(2022, 5, 5);
+		AnnualizedRate[] rates = new AnnualizedRate[]
+		{
+				new(0.01m, 10m),
+				new(0.05m, 1 / 24m),
+				new(0.07m, 1m),
+				new(0.11m, 14m)
+		};
+		DateOnly[] paymentDates = new DateOnly[]
+		{
+				calculationDate.AddYears(-0.3m),
+				calculationDate.AddYears(0.5m),
+				calculationDate.AddYears(0.6m),
+				calculationDate.AddYears(15m),
+		};
+		OrderedDates dates = new(paymentDates);
+		AnnualizedRates annualizedRates = new(calculationDate, rates);
+
+		// Act
+
+		// Assert
+		Assert.ThrowsException<ArgumentOutOfRangeException>(() => annualizedRates.DiscountFactor(dates[0]));
+
+	}
+	[TestMethod]
+	public void DiscountFactors_PaymentDateIsBeforeCalculationDate_ThrowsArgumentOutOfRange()
+	{
+		// Arrange
+		DateOnly calculationDate = new(2022, 5, 5);
+		AnnualizedRate[] rates = new AnnualizedRate[]
+		{
+				new(0.01m, 10m),
+				new(0.05m, 1 / 24m),
+				new(0.07m, 1m),
+				new(0.11m, 14m)
+		};
+		DateOnly[] paymentDates = new DateOnly[]
+		{
+				calculationDate.AddYears(-0.3m),
+				calculationDate.AddYears(0.5m),
+				calculationDate.AddYears(0.6m),
+				calculationDate.AddYears(15m),
+		};
+		OrderedDates dates = new(paymentDates);
+		AnnualizedRates annualizedRates = new(calculationDate, rates);
+
+		// Act
+
+		// Assert
+		Assert.ThrowsException<ArgumentOutOfRangeException>(() => annualizedRates.DiscountFactors(dates));
+
+	}
+	[TestMethod]
 	public void AccumulationFactor_EqualsAccumulationFactorsMethod_ReturnTrue()
 	{
 		// Arrange
@@ -234,5 +341,33 @@ public class AnnualizedRatesTest
 			differenceIsInMarginOrError = difference <= 10 * Mathematics.Mathematics.Epsilon;
 			Assert.IsTrue(differenceIsInMarginOrError);
 		}
+	}
+	[TestMethod]
+	public async Task AccmulationFactorsAsync_EqualsNonAsyncMethod_ReturnTrue()
+	{
+		// Arrange
+		DateOnly calculationDate = new(2022, 5, 5);
+		AnnualizedRate[] rates = new AnnualizedRate[]
+		{
+				new(0.01m, 10m),
+				new(0.05m, 1 / 24m),
+				new(0.07m, 1m),
+				new(0.11m, 14m)
+		};
+		DateOnly[] paymentDates = new DateOnly[]
+		{
+				calculationDate.AddYears(0.3m),
+				calculationDate.AddYears(0.5m),
+				calculationDate.AddYears(0.6m),
+				calculationDate.AddYears(15m),
+		};
+		OrderedDates dates = new(paymentDates);
+		AnnualizedRates annualizedRates = new(calculationDate, rates);
+		// Act
+		var expectedFactor = annualizedRates.AccumulationFactors(dates);
+		var factor = await annualizedRates.AccumulationFactorsAsync(dates);
+		// Assert
+		for (int i = 0; i < expectedFactor.Length; i++)
+			Assert.AreEqual(expectedFactor[i], factor[i]);
 	}
 }
