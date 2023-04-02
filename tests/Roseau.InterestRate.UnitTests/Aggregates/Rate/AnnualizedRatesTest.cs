@@ -27,7 +27,7 @@ public class AnnualizedRatesTest
 				calculationDate.AddYears(13),
 				calculationDate.AddYears(45),
 		};
-		OrderedDates dates = new OrderedDates(paymentDates);
+		OrderedDates dates = new(paymentDates);
 		AnnualizedRates annualizedRates = new(calculationDate, rates);
 		/*
 		 * For the determination of the power, using the NumberOfYears :  additionning the number of years:
@@ -106,10 +106,10 @@ public class AnnualizedRatesTest
 				calculationDate.AddYears(0.6m),
 				calculationDate.AddYears(15m),
 		};
-		OrderedDates dates = new OrderedDates(paymentDates);
+		OrderedDates dates = new(paymentDates);
 		AnnualizedRates annualizedRates = new(calculationDate, rates);
 		bool differenceIsInMarginOrError;
-		decimal difference = 0m;
+		decimal difference;
 
 		// Act
 		var expectedFactor = annualizedRates.DiscountFactors(dates);
@@ -118,6 +118,46 @@ public class AnnualizedRatesTest
 		for (int i = 0; i < factor.Length; i++)
 			factor[i] = annualizedRates.DiscountFactor(dates[i]);
 		
+		// Assert
+		for (int i = 0; i < expectedFactor.Length; i++)
+		{
+			difference = factor[i] - expectedFactor[i];
+			differenceIsInMarginOrError = difference <= 2 * Mathematics.Mathematics.Epsilon;
+			Assert.IsTrue(differenceIsInMarginOrError);
+		}
+
+	}
+	[TestMethod]
+	public void AccumulationFactor_EqualsAccumulationFactorsMethod_ReturnTrue()
+	{
+		// Arrange
+		DateOnly calculationDate = new(2022, 5, 5);
+		AnnualizedRate[] rates = new AnnualizedRate[]
+		{
+				new(0.01m, 10m),
+				new(0.05m, 1 / 24m),
+				new(0.07m, 1m),
+				new(0.11m, 14m)
+		};
+		DateOnly[] paymentDates = new DateOnly[]
+		{
+				calculationDate.AddYears(0.3m),
+				calculationDate.AddYears(0.5m),
+				calculationDate.AddYears(0.6m),
+				calculationDate.AddYears(15m),
+		};
+		OrderedDates dates = new(paymentDates);
+		AnnualizedRates annualizedRates = new(calculationDate, rates);
+		bool differenceIsInMarginOrError;
+		decimal difference;
+
+		// Act
+		var expectedFactor = annualizedRates.AccumulationFactors(dates);
+
+		decimal[] factor = new decimal[expectedFactor.Length];
+		for (int i = 0; i < factor.Length; i++)
+			factor[i] = annualizedRates.AccumulationFactor(dates[i]);
+
 		// Assert
 		for (int i = 0; i < expectedFactor.Length; i++)
 		{
@@ -146,7 +186,7 @@ public class AnnualizedRatesTest
 				calculationDate.AddYears(0.6m),
 				calculationDate.AddYears(15m),
 		};
-		OrderedDates dates = new OrderedDates(paymentDates);
+		OrderedDates dates = new(paymentDates);
 		AnnualizedRates annualizedRates = new(calculationDate, rates);
 		// Act
 		var expectedFactor = annualizedRates.DiscountFactors(dates);
@@ -154,5 +194,45 @@ public class AnnualizedRatesTest
 		// Assert
 		for(int i = 0; i < expectedFactor.Length; i++)
 			Assert.AreEqual(expectedFactor[i], factor[i]);
+	}
+	[TestMethod]
+	public void AccumulationFactors_EqualsInverseOfDiscountFactors_ReturnTrue()
+	{
+		// Arrange
+		DateOnly calculationDate = new(2022, 5, 5);
+		AnnualizedRate[] rates = new AnnualizedRate[]
+		{
+				new(0.01m, 10m),
+				new(0.05m, 1 / 24m),
+				new(0.07m, 1m),
+				new(0.11m, 14m)
+		};
+		DateOnly[] paymentDates = new DateOnly[]
+		{
+				calculationDate.AddYears(0.3m),
+				calculationDate.AddYears(0.5m),
+				calculationDate.AddYears(0.6m),
+				calculationDate.AddYears(15m),
+		};
+		OrderedDates dates = new(paymentDates);
+		AnnualizedRates annualizedRates = new(calculationDate, rates);
+		decimal difference;
+		bool differenceIsInMarginOrError;
+
+		// Act
+		var expectedFactor = annualizedRates.AccumulationFactors(dates);
+		var factor = annualizedRates.DiscountFactors(dates);
+		for (int i = 0; i < factor.Length; i++)
+		{
+			factor[i] = 1 / factor[i];
+		}
+
+		// Assert
+		for (int i = 0; i < expectedFactor.Length; i++)
+		{
+			difference = factor[i] - expectedFactor[i];
+			differenceIsInMarginOrError = difference <= 10 * Mathematics.Mathematics.Epsilon;
+			Assert.IsTrue(differenceIsInMarginOrError);
+		}
 	}
 }
