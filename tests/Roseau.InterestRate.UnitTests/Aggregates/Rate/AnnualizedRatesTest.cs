@@ -207,6 +207,34 @@ public class AnnualizedRatesTest
 
 	}
 	[TestMethod]
+	public void AccumulationFactor_PaymentDateIsBeforeCalculationDate_ThrowsArgumentOutOfRange()
+	{
+		// Arrange
+		DateOnly calculationDate = new(2022, 5, 5);
+		AnnualizedRate[] rates = new AnnualizedRate[]
+		{
+				new(0.01m, 10m),
+				new(0.05m, 1 / 24m),
+				new(0.07m, 1m),
+				new(0.11m, 14m)
+		};
+		DateOnly[] paymentDates = new DateOnly[]
+		{
+				calculationDate.AddYears(-0.3m),
+				calculationDate.AddYears(0.5m),
+				calculationDate.AddYears(0.6m),
+				calculationDate.AddYears(15m),
+		};
+		OrderedDates dates = new(paymentDates);
+		AnnualizedRates annualizedRates = new(calculationDate, rates);
+
+		// Act
+
+		// Assert
+		Assert.ThrowsException<ArgumentOutOfRangeException>(() => annualizedRates.AccumulationFactor(dates[0]));
+
+	}
+	[TestMethod]
 	public void DiscountFactors_PaymentDateIsBeforeCalculationDate_ThrowsArgumentOutOfRange()
 	{
 		// Arrange
