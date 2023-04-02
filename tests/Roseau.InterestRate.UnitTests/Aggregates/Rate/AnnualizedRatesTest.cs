@@ -215,6 +215,7 @@ public class AnnualizedRatesTest
 		AnnualizedRate[] rates = new AnnualizedRate[]
 		{
 				new(0.01m, 10m),
+				new(0.02m, 5m),
 		};
 		DateOnly[] paymentDates = new DateOnly[]
 		{
@@ -225,8 +226,8 @@ public class AnnualizedRatesTest
 		};
 		OrderedDates dates = new(paymentDates);
 		AnnualizedRates annualizedRates = new(calculationDate, rates);
-		decimal expectedFactor = Mathematics.Mathematics.Pow(1.01m, calculationDate.AgeCalculator(calculationDate.AddYears(0.3m)));
-		decimal factor = annualizedRates.AccumulationFactor(dates[0]);
+		decimal expectedFactor = annualizedRates.AccumulationFactors(dates)[3];
+		decimal factor = annualizedRates.AccumulationFactor(dates[3]);
 
 		// Act
 
