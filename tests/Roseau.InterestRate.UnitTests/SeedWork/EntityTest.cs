@@ -229,6 +229,6 @@ public class EntityTest
 		// Act
 		
 		// Assert
-		Assert.AreEqual(entity.GetHashCode(), 0);
+		Assert.AreEqual(0, entity.GetHashCode());
 	}
 }

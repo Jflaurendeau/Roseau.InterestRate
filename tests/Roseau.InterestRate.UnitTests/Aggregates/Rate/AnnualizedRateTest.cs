@@ -231,6 +231,43 @@ public class AnnualizedRateTest
 		Assert.IsTrue(differenceIsInMarginOrError);
 	}
 	[TestMethod]
+	public void AccumulationFactor_TwelfthOfAYearWithHighInterestRateIsExact_ReturnsTrue()
+	{
+		// Arrange
+		decimal rate = 0.1m;
+		decimal years = 1 / 12m;
+		AnnualizedRate rateDefault = new(rate, years);
+		DateOnly calculationDate = new(2000, 1, 1);
+		DateOnly paymentDate = calculationDate.AddYears(1);
+		decimal exactDiscountFactor;
+		decimal testDiscountFactor;
+		decimal difference;
+		bool differenceIsInMarginOrError;
+
+		// Act
+		exactDiscountFactor = 1.00797414042890374106603184422323033318250514514m; // ... = 1.1^(1/12) sur Wolfram
+		testDiscountFactor = rateDefault.AccumulationFactor(calculationDate, paymentDate);
+		difference = Math.Abs(exactDiscountFactor - testDiscountFactor); // Différence peut être causé par les arrondis machines
+		differenceIsInMarginOrError = difference <= 2 * Mathematics.Mathematics.Epsilon;
+
+		// Assert
+		Assert.IsTrue(differenceIsInMarginOrError);
+	}
+	[TestMethod]
+	public void AccumulationFactor_CalculationDateIfAfterPaymentDate_Throws()
+	{
+		// Arrange
+		decimal rate = 0.1m;
+		decimal years = 1 / 12m;
+		AnnualizedRate rateDefault = new(rate, years);
+		DateOnly calculationDate = new(2000, 1, 1);
+
+		// Act
+
+		// Assert
+		Assert.ThrowsException<ArgumentOutOfRangeException>(() => rateDefault.AccumulationFactor(calculationDate, calculationDate.AddDays(-1)));
+	}
+	[TestMethod]
 	[DataRow(0.1)]
 	[DataRow(1)]
 	[DataRow(10)]
