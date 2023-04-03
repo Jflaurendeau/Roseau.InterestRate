@@ -1,5 +1,6 @@
 ﻿using Roseau.DateHelpers;
 using Roseau.InterestRate.Aggregates.Rate;
+using Roseau.InterestRate.SeedWork;
 using Roseau.Mathematics;
 
 namespace Roseau.InterestRate.UnitTests.Aggregates.Rate;
@@ -7,6 +8,27 @@ namespace Roseau.InterestRate.UnitTests.Aggregates.Rate;
 [TestClass]
 public class AnnualizedRatesTest
 {
+
+	[TestMethod]
+	public void Id_CreatedOnConstructor_ReturnTrue()
+	{
+		// Arrange
+		Guid id = Guid.NewGuid();
+		DateOnly calculationDate = new DateOnly(2022, 05, 15);
+		AnnualizedRate[] rates = new AnnualizedRate[]
+		{
+				new(0.01m, 10m),
+				new(0.05m, 1 / 24m),
+				new(0.07m, 1m),
+				new(0.11m, 14m)
+		};
+		AnnualizedRates annualizedRates = new AnnualizedRates(calculationDate, rates);
+
+		// Act
+
+		// Assert
+		Assert.IsNotNull(annualizedRates.Id);
+	}
 	[TestMethod]
 	public void AnnualizedRates_PassingIEnumerableWithNull_ThrowsArgumentNullException()
 	{
@@ -271,9 +293,6 @@ public class AnnualizedRatesTest
 		AnnualizedRate[] rates = new AnnualizedRate[]
 		{
 				new(0.01m, 10m),
-				new(0.05m, 1 / 24m),
-				new(0.07m, 1m),
-				new(0.11m, 14m)
 		};
 		DateOnly[] paymentDates = new DateOnly[]
 		{

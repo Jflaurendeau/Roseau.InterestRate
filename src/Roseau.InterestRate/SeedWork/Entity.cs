@@ -40,6 +40,6 @@ public abstract class Entity
 			return this.Id.GetHashCode() ^ 31;
 		// XOR for random distribution. See: 
 		// https://docs.microsoft.com/archive/blogs/ericlippert/guidelines-and-rules-for-gethashcode
-		return this.GetHashCode();
+		return 0;
 	}
 }

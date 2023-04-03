@@ -16,13 +16,6 @@ public class AnnualizedRate : ValueObject
 	/// <param name="numberOfYears">Number of years the annualized rate is applyable (must be greater then 0)</param>
 	public AnnualizedRate(decimal annualizedRate, decimal numberOfYears)
 	{
-		List<Exception> exceptions = new();
-		if (annualizedRate <= -1)
-			exceptions.Add(new ImpossibleAnnualizedRateException());
-		if (numberOfYears <= 0)
-			exceptions.Add(new UnusableNumberOfYearsException());
-		if (exceptions.Any())
-			throw new AggregateException(exceptions);
 		Rate = annualizedRate;
 		NumberOfYears = numberOfYears;
 	}
@@ -88,11 +81,7 @@ public class AnnualizedRate : ValueObject
 		return Mathematics.Mathematics.Pow(1 / (1 + Rate), power);
 	}
 	public decimal DiscountFactor(decimal numberOfYears)
-	{
-		if (numberOfYears > NumberOfYears)
-            throw new ArgumentOutOfRangeException(nameof(numberOfYears), $"The number of years argument ({numberOfYears}) must be less then the number of years property ({NumberOfYears}).");
-		return Mathematics.Mathematics.Pow(1 / (1 + Rate), numberOfYears);
-	}
+		=> Mathematics.Mathematics.Pow(1 / (1 + Rate), Math.Min(numberOfYears, NumberOfYears));
 	public decimal DiscountFactorAtEndOfRatePeriod() => Mathematics.Mathematics.Pow(1 / (1 + Rate), NumberOfYears);
 
 	public decimal AccumulationFactor(DateOnly calculationDate, DateOnly paymentDate)
@@ -103,10 +92,6 @@ public class AnnualizedRate : ValueObject
 		return Mathematics.Mathematics.Pow(1 + Rate, power);
 	}
 	public decimal AccumulationFactor(decimal numberOfYears)
-	{
-		if (numberOfYears > NumberOfYears)
-			throw new ArgumentOutOfRangeException(nameof(numberOfYears), $"The number of years argument ({numberOfYears}) must be less then the number of years property ({NumberOfYears}).");
-		return Mathematics.Mathematics.Pow(1 + Rate, numberOfYears);
-	}
+		=> Mathematics.Mathematics.Pow(1 + Rate, Math.Min(numberOfYears, NumberOfYears));
 	public decimal AccumulationFactorAtEndOfRatePeriod() => Mathematics.Mathematics.Pow(1 + Rate, NumberOfYears);
 }
