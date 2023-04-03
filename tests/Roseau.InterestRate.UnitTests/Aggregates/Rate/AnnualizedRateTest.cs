@@ -1,5 +1,6 @@
 using Roseau.InterestRate.Aggregates.Rate;
 using Roseau.InterestRate.Common.Exceptions;
+using Roseau.Mathematics;
 
 namespace Roseau.InterestRate.UnitTests.Aggregates.Rate;
 
@@ -11,14 +12,14 @@ public class AnnualizedRateTest
 	[DataRow(-1)]
 	public void AnnualizedRate_RateLessOrEqualToMinusOne_ThrowException(int n)
 	{
-		Assert.ThrowsException<AggregateException>(() => new AnnualizedRate(n, 10m));
+		Assert.ThrowsException<ImpossibleAnnualizedRateException>(() => new AnnualizedRate(n, 10m));
 	}
 	[TestMethod]
 	[DataRow(-2)]
 	[DataRow(0)]
 	public void NumberOfYears_YearsLessOrEqualTo0_ThrowException(int n)
 	{
-		Assert.ThrowsException<AggregateException>(() => new AnnualizedRate(0m, n));
+		Assert.ThrowsException<UnusableNumberOfYearsException>(() => new AnnualizedRate(0m, n));
 	}
 	[TestMethod]
 	public void DiscountFactor_PaymentDateIsBeforeCalculationDate_ThrowException()
@@ -30,6 +31,17 @@ public class AnnualizedRateTest
 
 		// Assert
 		Assert.ThrowsException<ArgumentOutOfRangeException>(() => rate.DiscountFactor(calculationDate, paymentDate));
+	}
+	[TestMethod]
+	public void AccumulationFactor_PaymentDateIsBeforeCalculationDate_ThrowException()
+	{
+		// Arrange
+		AnnualizedRate rate = new(0m, 10m);
+		DateOnly paymentDate = new(2002, 1, 1);
+		DateOnly calculationDate = paymentDate.AddDays(1);
+
+		// Assert
+		Assert.ThrowsException<ArgumentOutOfRangeException>(() => rate.AccumulationFactor(calculationDate, paymentDate));
 	}
 	[TestMethod]
 	public void DiscountFactor_TenYearsOfDiscountRate_ReturnsGoodResult()
@@ -51,6 +63,34 @@ public class AnnualizedRateTest
 
 		// Assert
 		Assert.AreEqual(exactDiscountFactor, testDiscountFactor);
+	}
+	[TestMethod]
+	public void GetEqualityComponent_TwoAnnualizedRatesAreEqual_ReturnsTrue()
+	{
+		// Arrange
+		decimal rate = 0.01m;
+		decimal years = 10;
+		AnnualizedRate annualizedRate = new AnnualizedRate(rate, years);
+		AnnualizedRate annualizedRate2 = new AnnualizedRate(rate, years);
+
+		// Act
+
+		// Assert
+		Assert.IsTrue(annualizedRate.Equals(annualizedRate2));
+	}
+	[TestMethod]
+	public void GetEqualityComponent_TwoAnnualizedRatesAreNotEqual_ReturnsFalse()
+	{
+		// Arrange
+		decimal rate = 0.01m;
+		decimal years = 10;
+		AnnualizedRate annualizedRate = new AnnualizedRate(rate, years);
+		AnnualizedRate annualizedRate2 = new AnnualizedRate(rate, years+1);
+
+		// Act
+
+		// Assert
+		Assert.IsFalse(annualizedRate.Equals(annualizedRate2));
 	}
 	[TestMethod]
 	public void DiscountFactor_HalfAYearWithLowDiscountRateIsExact_ReturnsTrue()
@@ -189,5 +229,78 @@ public class AnnualizedRateTest
 
 		// Assert
 		Assert.IsTrue(differenceIsInMarginOrError);
+	}
+	[TestMethod]
+	public void AccumulationFactor_TwelfthOfAYearWithHighInterestRateIsExact_ReturnsTrue()
+	{
+		// Arrange
+		decimal rate = 0.1m;
+		decimal years = 1 / 12m;
+		AnnualizedRate rateDefault = new(rate, years);
+		DateOnly calculationDate = new(2000, 1, 1);
+		DateOnly paymentDate = calculationDate.AddYears(1);
+		decimal exactDiscountFactor;
+		decimal testDiscountFactor;
+		decimal difference;
+		bool differenceIsInMarginOrError;
+
+		// Act
+		exactDiscountFactor = 1.00797414042890374106603184422323033318250514514m; // ... = 1.1^(1/12) sur Wolfram
+		testDiscountFactor = rateDefault.AccumulationFactor(calculationDate, paymentDate);
+		difference = Math.Abs(exactDiscountFactor - testDiscountFactor); // Différence peut être causé par les arrondis machines
+		differenceIsInMarginOrError = difference <= 2 * Mathematics.Mathematics.Epsilon;
+
+		// Assert
+		Assert.IsTrue(differenceIsInMarginOrError);
+	}
+	[TestMethod]
+	public void AccumulationFactor_CalculationDateIfAfterPaymentDate_Throws()
+	{
+		// Arrange
+		decimal rate = 0.1m;
+		decimal years = 1 / 12m;
+		AnnualizedRate rateDefault = new(rate, years);
+		DateOnly calculationDate = new(2000, 1, 1);
+
+		// Act
+
+		// Assert
+		Assert.ThrowsException<ArgumentOutOfRangeException>(() => rateDefault.AccumulationFactor(calculationDate, calculationDate.AddDays(-1)));
+	}
+	[TestMethod]
+	[DataRow(0.1)]
+	[DataRow(1)]
+	[DataRow(10)]
+	[DataRow(100)]
+	public void DiscountFactorAtEndOfRatePeriod_MultiplePeriods_ReturnsTrue(double years)
+	{
+		// Arrange
+		decimal rate = 0.01m;
+		AnnualizedRate annualizedRate = new AnnualizedRate(rate, Convert.ToDecimal(years));
+
+		// Act
+		decimal expected = Mathematics.Mathematics.Pow(1 / (1 + rate), Convert.ToDecimal(years));
+		decimal actual = annualizedRate.DiscountFactorAtEndOfRatePeriod();
+
+		// Assert
+		Assert.AreEqual(expected, actual);
+	}
+	[TestMethod]
+	[DataRow(0.1)]
+	[DataRow(1)]
+	[DataRow(10)]
+	[DataRow(100)]
+	public void AccumulationFactorAtEndOfRatePeriod_MultiplePeriods_ReturnsTrue(double years)
+	{
+		// Arrange
+		decimal rate = 0.01m;
+		AnnualizedRate annualizedRate = new AnnualizedRate(rate, Convert.ToDecimal(years));
+
+		// Act
+		decimal expected = Mathematics.Mathematics.Pow(1 + rate, Convert.ToDecimal(years));
+		decimal actual = annualizedRate.AccumulationFactorAtEndOfRatePeriod();
+
+		// Assert
+		Assert.AreEqual(expected, actual);
 	}
 }

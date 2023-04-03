@@ -8,9 +8,12 @@ public class AnnualizedRates : Entity, IAggregateRoot
 {
 	private readonly AnnualizedRate[] _rates;
 
-	public AnnualizedRates(DateOnly calculationDate, IEnumerable<AnnualizedRate> annualizedRates)
+	public AnnualizedRates(DateOnly calculationDate, IEnumerable<AnnualizedRate> annualizedRates) : this(Guid.NewGuid(), calculationDate, annualizedRates) { }
+
+	public AnnualizedRates(Guid guid, DateOnly calculationDate, IEnumerable<AnnualizedRate> annualizedRates)
 	{
 		GuardAgainstInvalidState(calculationDate, annualizedRates);
+		Id = guid;
 		CalculationDate = calculationDate;
 		_rates = annualizedRates.ToArray();
 	}
