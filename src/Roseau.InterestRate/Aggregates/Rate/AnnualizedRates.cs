@@ -43,11 +43,19 @@ public class AnnualizedRates : Entity, IAggregateRoot
 	public decimal DiscountFactor(DateOnly paymentDate)
 		=> Factor(paymentDate, GetDiscountFactor);
 	public decimal[] DiscountFactors(OrderedDates dates)
-		=> Factors(dates, GetDiscountFactor);
+		=> Factors(dates.AsSpan(), GetDiscountFactor);
+	public decimal[] DiscountFactors(OrderedDates dates, int start)
+		=> Factors(dates.AsSpan(start), GetDiscountFactor);
+	public decimal[] DiscountFactors(OrderedDates dates, int start, int length)
+		=> Factors(dates.AsSpan(start, length), GetDiscountFactor);
 	public decimal AccumulationFactor(DateOnly paymentDate)
 		=> Factor(paymentDate, GetAccumulationFactor);
 	public decimal[] AccumulationFactors(OrderedDates dates)
-		=> Factors(dates, GetAccumulationFactor);
+		=> Factors(dates.AsSpan(), GetAccumulationFactor);
+	public decimal[] AccumulationFactors(OrderedDates dates, int start)
+		=> Factors(dates.AsSpan(start), GetAccumulationFactor);
+	public decimal[] AccumulationFactors(OrderedDates dates, int start, int length)
+		=> Factors(dates.AsSpan(start, length), GetAccumulationFactor);
 	private decimal Factor(DateOnly paymentDate, Func<AnnualizedRate, decimal, decimal> accumulationOrDiscountFactor)
 	{
 		if (CalculationDate > paymentDate)
@@ -68,13 +76,14 @@ public class AnnualizedRates : Entity, IAggregateRoot
 		factor *= accumulationOrDiscountFactor(_rates[index], Math.Min(numberOfYears, numberOfYearsOfRates));
 		return factor;
 	}
-	private decimal[] Factors(OrderedDates dates, Func<AnnualizedRate, decimal, decimal> AccumulationOrDiscountFactor)
+	private decimal[] Factors(ReadOnlySpan<DateOnly> dates, Func<AnnualizedRate, decimal, decimal> AccumulationOrDiscountFactor)
 	{
-		Guard.IsNotNull(dates);
+		if (dates == Span<DateOnly>.Empty)
+			throw new ArgumentNullException(nameof(dates));
 		if (dates[0] < CalculationDate)
 			throw new ArgumentOutOfRangeException($"The {nameof(CalculationDate)} ({CalculationDate}) must precedes {dates[0]} and every other date in the list");
 
-		int numberOfDates = dates.Count;
+		int numberOfDates = dates.Length;
 		decimal[] factorArray = new decimal[numberOfDates];
 
 
@@ -121,6 +130,10 @@ public class AnnualizedRates : Entity, IAggregateRoot
 		=> annualizedRate.AccumulationFactor(numberOfYears);
 
 	public Task<decimal[]> DiscountFactorsAsync(OrderedDates dates) => Task.Run(() => DiscountFactors(dates));
+	public Task<decimal[]> DiscountFactorsAsync(OrderedDates dates, int start) => Task.Run(() => DiscountFactors(dates, start));
+	public Task<decimal[]> DiscountFactorsAsync(OrderedDates dates, int start, int lenght) => Task.Run(() => DiscountFactors(dates, start, lenght));
 	public Task<decimal[]> AccumulationFactorsAsync(OrderedDates dates) => Task.Run(() => AccumulationFactors(dates));
+	public Task<decimal[]> AccumulationFactorsAsync(OrderedDates dates, int start) => Task.Run(() => AccumulationFactors(dates, start));
+	public Task<decimal[]> AccumulationFactorsAsync(OrderedDates dates, int start, int lenght) => Task.Run(() => AccumulationFactors(dates, start, lenght));
 
 }
