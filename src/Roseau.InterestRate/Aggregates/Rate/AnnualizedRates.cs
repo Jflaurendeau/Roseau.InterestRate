@@ -40,37 +40,22 @@ public class AnnualizedRates : Entity, IAggregateRoot
 	#region Discount factors
 	public decimal DiscountFactor(DateOnly paymentDate)
 		=> Factor(paymentDate, GetDiscountFactor);
-	public decimal[] DiscountFactors(OrderedDates dates)
-		=> Factors(dates.AsSpan(), GetDiscountFactor);
-	public decimal[] DiscountFactors(OrderedDates dates, int start)
-		=> Factors(dates.AsSpan(start), GetDiscountFactor);
-	public decimal[] DiscountFactors(OrderedDates dates, int start, int length)
-		=> Factors(dates.AsSpan(start, length), GetDiscountFactor);
-	public decimal[] DiscountFactorsCached(OrderedDates dates)
-		=> GetOrCreate(dates, GetDiscountFactor);
-	public ReadOnlySpan<decimal> DiscountFactorsCachedAsSpan(OrderedDates dates)
-		=> GetOrCreate(dates, GetDiscountFactor);
-	public decimal[] DiscountFactorsCachedSubArray(OrderedDates dates, int start, int length)
-		=> new ReadOnlySpan<decimal>(GetOrCreate(dates, GetDiscountFactor), start, length).ToArray();
-	public ReadOnlySpan<decimal> DiscountFactorsCachedAsSpanSubArray(OrderedDates dates, int start, int length)
-		=> new(GetOrCreate(dates, GetDiscountFactor), start, length);
-	public Task<decimal[]> DiscountFactorsAsync(OrderedDates dates) => Task.Run(() => DiscountFactors(dates));
-	public Task<decimal[]> DiscountFactorsAsync(OrderedDates dates, int start) => Task.Run(() => DiscountFactors(dates, start));
-	public Task<decimal[]> DiscountFactorsAsync(OrderedDates dates, int start, int lenght) => Task.Run(() => DiscountFactors(dates, start, lenght));
+	public ReadOnlySpan<decimal> DiscountFactors(OrderedDates dates)
+		=> new(GetFactors(dates, GetDiscountFactor));
+	public ReadOnlySpan<decimal> DiscountFactors(OrderedDates dates, int start)
+		=> new(GetFactors(dates, GetDiscountFactor), start, dates.Count - start);
+	public ReadOnlySpan<decimal> DiscountFactors(OrderedDates dates, int start, int length)
+		=> new(GetFactors(dates, GetDiscountFactor), start, length);
 	#endregion
 	#region Accumulation factors
 	public decimal AccumulationFactor(DateOnly paymentDate)
 		=> Factor(paymentDate, GetAccumulationFactor);
-	public decimal[] AccumulationFactors(OrderedDates dates)
-		=> Factors(dates.AsSpan(), GetAccumulationFactor);
-	public decimal[] AccumulationFactors(OrderedDates dates, int start)
-		=> Factors(dates.AsSpan(start), GetAccumulationFactor);
-	public decimal[] AccumulationFactors(OrderedDates dates, int start, int length)
-		=> Factors(dates.AsSpan(start, length), GetAccumulationFactor);
-	public Task<decimal[]> AccumulationFactorsAsync(OrderedDates dates) => Task.Run(() => AccumulationFactors(dates));
-	public Task<decimal[]> AccumulationFactorsAsync(OrderedDates dates, int start) => Task.Run(() => AccumulationFactors(dates, start));
-	public Task<decimal[]> AccumulationFactorsAsync(OrderedDates dates, int start, int lenght) => Task.Run(() => AccumulationFactors(dates, start, lenght));
-
+	public ReadOnlySpan<decimal> AccumulationFactors(OrderedDates dates)
+		=> new(GetFactors(dates, GetAccumulationFactor));
+	public ReadOnlySpan<decimal> AccumulationFactors(OrderedDates dates, int start)
+		=> new(GetFactors(dates, GetAccumulationFactor), start, dates.Count - start);
+	public ReadOnlySpan<decimal> AccumulationFactors(OrderedDates dates, int start, int length)
+		=> new(GetFactors(dates, GetAccumulationFactor), start, length);
 	#endregion
 	#region Discount and Accumulation Func
 	private static decimal GetDiscountFactor(AnnualizedRate annualizedRate, decimal numberOfYears)
@@ -88,7 +73,7 @@ public class AnnualizedRates : Entity, IAggregateRoot
 		if (numberOfNull > 0)
 			throw new ArgumentNullException(nameof(annualizedRates), $"The rates (IEnumerable<AnnualizedRate>) contains {numberOfNull} non-initialized elements and all element must be initialized");
 	}
-	private decimal[] GetOrCreate(OrderedDates dates, Func<AnnualizedRate, decimal, decimal> accumulationOrDiscountFactor)
+	private decimal[] GetFactors(OrderedDates dates, Func<AnnualizedRate, decimal, decimal> accumulationOrDiscountFactor)
 	{
 		int key = HashCode.Combine(dates, GetDiscountFactor);
 		if (!_cache.TryGetValue(key, out decimal[]? result))

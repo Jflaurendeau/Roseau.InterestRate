@@ -13,8 +13,7 @@ public class AnnualizedRatesTest
 	public void Id_CreatedOnConstructor_ReturnTrue()
 	{
 		// Arrange
-		Guid id = Guid.NewGuid();
-		DateOnly calculationDate = new DateOnly(2022, 05, 15);
+		DateOnly calculationDate = new(2022, 05, 15);
 		AnnualizedRate[] rates = new AnnualizedRate[]
 		{
 				new(0.01m, 10m),
@@ -22,7 +21,7 @@ public class AnnualizedRatesTest
 				new(0.07m, 1m),
 				new(0.11m, 14m)
 		};
-		AnnualizedRates annualizedRates = new AnnualizedRates(calculationDate, rates);
+		AnnualizedRates annualizedRates = new(calculationDate, rates);
 
 		// Act
 
@@ -60,14 +59,6 @@ public class AnnualizedRatesTest
 				new(0.07m, 1m),
 				new(0.11m, 14m)
 		};
-		DateOnly[] paymentDates = new DateOnly[]
-		{
-				calculationDate.AddYears(0.3m),
-				calculationDate.AddYears(0.5m),
-				calculationDate.AddYears(0.6m),
-				calculationDate.AddYears(15m),
-		};
-		OrderedDates dates = new(paymentDates);
 		AnnualizedRates annualizedRates = new(calculationDate, rates);
 
 		// Act
@@ -85,7 +76,7 @@ public class AnnualizedRatesTest
 	{
 		// Arrange
 		decimal[] expectedDiscountRateArray = new decimal[4];
-		decimal[] calculatedDiscountRateArray;
+		ReadOnlySpan<decimal> calculatedDiscountRateArray;
 		DateOnly calculationDate = new(2022, 5, 5);
 		AnnualizedRate[] rates = new AnnualizedRate[]
 		{
@@ -323,97 +314,6 @@ public class AnnualizedRatesTest
 
 	}
 	[TestMethod]
-	public async Task DiscountFactorsAsync_EqualsNonAsyncMethod_ReturnTrue()
-	{
-		// Arrange
-		DateOnly calculationDate = new(2022, 5, 5);
-		AnnualizedRate[] rates = new AnnualizedRate[]
-		{
-				new(0.01m, 10m),
-				new(0.05m, 1 / 24m),
-				new(0.07m, 1m),
-				new(0.11m, 14m)
-		};
-		DateOnly[] paymentDates = new DateOnly[]
-		{
-				calculationDate.AddYears(0.3m),
-				calculationDate.AddYears(0.5m),
-				calculationDate.AddYears(0.6m),
-				calculationDate.AddYears(15m),
-		};
-		OrderedDates dates = new(paymentDates);
-		AnnualizedRates annualizedRates = new(calculationDate, rates);
-		// Act
-		var expectedFactor = annualizedRates.DiscountFactors(dates);
-		var factor = await annualizedRates.DiscountFactorsAsync(dates);
-		// Assert
-		for(int i = 0; i < expectedFactor.Length; i++)
-			Assert.AreEqual(expectedFactor[i], factor[i]);
-	}
-	[TestMethod]
-	public async Task DiscountFactorsAsync_EqualsMethodWithSpanStart_ReturnTrue()
-	{
-		// Arrange
-		DateOnly calculationDate = new(2022, 5, 5);
-		AnnualizedRate[] rates = new AnnualizedRate[]
-		{
-				new(0.01m, 10m),
-				new(0.05m, 1 / 24m),
-				new(0.07m, 1m),
-				new(0.11m, 14m)
-		};
-		DateOnly[] paymentDates = new DateOnly[]
-		{
-				calculationDate.AddYears(0.3m),
-				calculationDate.AddYears(0.5m),
-				calculationDate.AddYears(0.6m),
-				calculationDate.AddYears(15m),
-		};
-		int startIndex = 1;
-		OrderedDates dates = new(paymentDates);
-		OrderedDates datesExpected = new(dates.AsSpan(startIndex).ToArray());
-		AnnualizedRates annualizedRates = new(calculationDate, rates);
-
-		// Act
-		var expectedFactor = annualizedRates.DiscountFactors(datesExpected);
-		var factor = await annualizedRates.DiscountFactorsAsync(dates, startIndex);
-		// Assert
-		for (int i = 0; i < expectedFactor.Length; i++)
-			Assert.AreEqual(expectedFactor[i], factor[i]);
-	}
-	[TestMethod]
-	public async Task DiscountFactorsAsync_EqualsMethodWithSpanStartAndLenght_ReturnTrue()
-	{
-		// Arrange
-		DateOnly calculationDate = new(2022, 5, 5);
-		AnnualizedRate[] rates = new AnnualizedRate[]
-		{
-				new(0.01m, 10m),
-				new(0.05m, 1 / 24m),
-				new(0.07m, 1m),
-				new(0.11m, 14m)
-		};
-		DateOnly[] paymentDates = new DateOnly[]
-		{
-				calculationDate.AddYears(0.3m),
-				calculationDate.AddYears(0.5m),
-				calculationDate.AddYears(0.6m),
-				calculationDate.AddYears(15m),
-		};
-		int startIndex = 0;
-		int length = 2;
-		OrderedDates dates = new(paymentDates);
-		OrderedDates datesExpected = new(dates.AsSpan(startIndex, length).ToArray());
-		AnnualizedRates annualizedRates = new(calculationDate, rates);
-
-		// Act
-		var expectedFactor = annualizedRates.DiscountFactors(datesExpected);
-		var factor = await annualizedRates.DiscountFactorsAsync(dates, startIndex, length);
-		// Assert
-		for (int i = 0; i < expectedFactor.Length; i++)
-			Assert.AreEqual(expectedFactor[i], factor[i]);
-	}
-	[TestMethod]
 	public void AccumulationFactors_EqualsInverseOfDiscountFactors_ReturnTrue()
 	{
 		// Arrange
@@ -439,7 +339,7 @@ public class AnnualizedRatesTest
 
 		// Act
 		var expectedFactor = annualizedRates.AccumulationFactors(dates);
-		var factor = annualizedRates.DiscountFactors(dates);
+		var factor = annualizedRates.DiscountFactors(dates).ToArray();
 		for (int i = 0; i < factor.Length; i++)
 		{
 			factor[i] = 1 / factor[i];
@@ -452,95 +352,5 @@ public class AnnualizedRatesTest
 			differenceIsInMarginOrError = difference <= 10 * Mathematics.Mathematics.Epsilon;
 			Assert.IsTrue(differenceIsInMarginOrError);
 		}
-	}
-	[TestMethod]
-	public async Task AccmulationFactorsAsync_EqualsNonAsyncMethod_ReturnTrue()
-	{
-		// Arrange
-		DateOnly calculationDate = new(2022, 5, 5);
-		AnnualizedRate[] rates = new AnnualizedRate[]
-		{
-				new(0.01m, 10m),
-				new(0.05m, 1 / 24m),
-				new(0.07m, 1m),
-				new(0.11m, 14m)
-		};
-		DateOnly[] paymentDates = new DateOnly[]
-		{
-				calculationDate.AddYears(0.3m),
-				calculationDate.AddYears(0.5m),
-				calculationDate.AddYears(0.6m),
-				calculationDate.AddYears(15m),
-		};
-		OrderedDates dates = new(paymentDates);
-		AnnualizedRates annualizedRates = new(calculationDate, rates);
-		// Act
-		var expectedFactor = annualizedRates.AccumulationFactors(dates);
-		var factor = await annualizedRates.AccumulationFactorsAsync(dates);
-		// Assert
-		for (int i = 0; i < expectedFactor.Length; i++)
-			Assert.AreEqual(expectedFactor[i], factor[i]);
-	}
-	[TestMethod]
-	public async Task AccmulationFactorsAsync_EqualsMethodWithSpanStart_ReturnTrue()
-	{
-		// Arrange
-		DateOnly calculationDate = new(2022, 5, 5);
-		AnnualizedRate[] rates = new AnnualizedRate[]
-		{
-				new(0.01m, 10m),
-				new(0.05m, 1 / 24m),
-				new(0.07m, 1m),
-				new(0.11m, 14m)
-		};
-		DateOnly[] paymentDates = new DateOnly[]
-		{
-				calculationDate.AddYears(0.3m),
-				calculationDate.AddYears(0.5m),
-				calculationDate.AddYears(0.6m),
-				calculationDate.AddYears(15m),
-		};
-		int startIndex = 1;
-		OrderedDates dates = new(paymentDates);
-		OrderedDates datesExpected = new(dates.AsSpan(startIndex).ToArray());
-		AnnualizedRates annualizedRates = new(calculationDate, rates);
-
-		// Act
-		var expectedFactor = annualizedRates.AccumulationFactors(datesExpected);
-		var factor = await annualizedRates.AccumulationFactorsAsync(dates, startIndex);
-		// Assert
-		for (int i = 0; i < expectedFactor.Length; i++)
-			Assert.AreEqual(expectedFactor[i], factor[i]);
-	}
-	[TestMethod]
-	public async Task AccmulationFactorsAsync_EqualsMethodWithSpanStartAndLength_ReturnTrue()
-	{
-		// Arrange
-		DateOnly calculationDate = new(2022, 5, 5);
-		AnnualizedRate[] rates = new AnnualizedRate[]
-		{
-				new(0.01m, 10m),
-				new(0.05m, 1 / 24m),
-				new(0.07m, 1m),
-				new(0.11m, 14m)
-		};
-		DateOnly[] paymentDates = new DateOnly[]
-		{
-				calculationDate.AddYears(0.3m),
-				calculationDate.AddYears(0.5m),
-				calculationDate.AddYears(0.6m),
-				calculationDate.AddYears(15m),
-		};
-		int startIndex = 0;
-		int length = 2;
-		OrderedDates dates = new(paymentDates);
-		OrderedDates datesExpected = new(dates.AsSpan(startIndex, length).ToArray());
-		AnnualizedRates annualizedRates = new(calculationDate, rates);
-		// Act
-		var expectedFactor = annualizedRates.AccumulationFactors(datesExpected);
-		var factor = await annualizedRates.AccumulationFactorsAsync(dates, startIndex, length);
-		// Assert
-		for (int i = 0; i < expectedFactor.Length; i++)
-			Assert.AreEqual(expectedFactor[i], factor[i]);
 	}
 }
