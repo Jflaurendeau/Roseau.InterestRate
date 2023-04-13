@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Diagnostics;
+using Microsoft.Extensions.Caching.Memory;
 using Roseau.DateHelpers;
 using Roseau.InterestRate.SeedWork;
 
@@ -7,27 +8,23 @@ namespace Roseau.InterestRate.Aggregates.Rate;
 public class AnnualizedRates : Entity, IAggregateRoot
 {
 	private readonly AnnualizedRate[] _rates;
+	private readonly IMemoryCache _cache;
 
-	public AnnualizedRates(DateOnly calculationDate, IEnumerable<AnnualizedRate> annualizedRates) : this(Guid.NewGuid(), calculationDate, annualizedRates) { }
-
-	public AnnualizedRates(Guid guid, DateOnly calculationDate, IEnumerable<AnnualizedRate> annualizedRates)
+	#region Constructors
+	public AnnualizedRates(DateOnly calculationDate, IEnumerable<AnnualizedRate> annualizedRates, IMemoryCache? memoryCache = default) : this(Guid.NewGuid(), calculationDate, annualizedRates, memoryCache) { }
+	public AnnualizedRates(Guid guid, DateOnly calculationDate, IEnumerable<AnnualizedRate> annualizedRates, IMemoryCache? memoryCache = default)
 	{
 		GuardAgainstInvalidState(calculationDate, annualizedRates);
 		Id = guid;
 		CalculationDate = calculationDate;
 		_rates = annualizedRates.ToArray();
+		_cache = memoryCache ?? new MemoryCache(new MemoryCacheOptions() { SizeLimit = 16, });
 	}
-	private static void GuardAgainstInvalidState(DateOnly calculationDate, IEnumerable<AnnualizedRate> annualizedRates)
-	{
-		Guard.IsNotNull(calculationDate);
-		Guard.IsNotNull(annualizedRates);
-		int numberOfNull = annualizedRates.Count(_ => _ is null);
-		if (numberOfNull > 0)
-			throw new ArgumentNullException(nameof(annualizedRates), $"The rates (IEnumerable<AnnualizedRate>) contains {numberOfNull} non-initialized elements and all element must be initialized");
-	}
-	
+	#endregion
+	#region Properties
 	public DateOnly CalculationDate { get; private set; }
 	public IReadOnlyCollection<AnnualizedRate> Rates => _rates;
+	#endregion
 
 	public DateOnly[] DatesAtWhichEachRatePeriodEnd()
 	{
@@ -40,6 +37,7 @@ public class AnnualizedRates : Entity, IAggregateRoot
 		}
 		return datesEachRatePeriodEnd;
 	}
+	#region Discount factors
 	public decimal DiscountFactor(DateOnly paymentDate)
 		=> Factor(paymentDate, GetDiscountFactor);
 	public decimal[] DiscountFactors(OrderedDates dates)
@@ -48,6 +46,19 @@ public class AnnualizedRates : Entity, IAggregateRoot
 		=> Factors(dates.AsSpan(start), GetDiscountFactor);
 	public decimal[] DiscountFactors(OrderedDates dates, int start, int length)
 		=> Factors(dates.AsSpan(start, length), GetDiscountFactor);
+	public decimal[] DiscountFactorsCached(OrderedDates dates)
+		=> GetOrCreate(dates, GetDiscountFactor);
+	public ReadOnlySpan<decimal> DiscountFactorsCachedAsSpan(OrderedDates dates)
+		=> GetOrCreate(dates, GetDiscountFactor);
+	public decimal[] DiscountFactorsCachedSubArray(OrderedDates dates, int start, int length)
+		=> new ReadOnlySpan<decimal>(GetOrCreate(dates, GetDiscountFactor), start, length).ToArray();
+	public ReadOnlySpan<decimal> DiscountFactorsCachedAsSpanSubArray(OrderedDates dates, int start, int length)
+		=> new(GetOrCreate(dates, GetDiscountFactor), start, length);
+	public Task<decimal[]> DiscountFactorsAsync(OrderedDates dates) => Task.Run(() => DiscountFactors(dates));
+	public Task<decimal[]> DiscountFactorsAsync(OrderedDates dates, int start) => Task.Run(() => DiscountFactors(dates, start));
+	public Task<decimal[]> DiscountFactorsAsync(OrderedDates dates, int start, int lenght) => Task.Run(() => DiscountFactors(dates, start, lenght));
+	#endregion
+	#region Accumulation factors
 	public decimal AccumulationFactor(DateOnly paymentDate)
 		=> Factor(paymentDate, GetAccumulationFactor);
 	public decimal[] AccumulationFactors(OrderedDates dates)
@@ -56,6 +67,41 @@ public class AnnualizedRates : Entity, IAggregateRoot
 		=> Factors(dates.AsSpan(start), GetAccumulationFactor);
 	public decimal[] AccumulationFactors(OrderedDates dates, int start, int length)
 		=> Factors(dates.AsSpan(start, length), GetAccumulationFactor);
+	public Task<decimal[]> AccumulationFactorsAsync(OrderedDates dates) => Task.Run(() => AccumulationFactors(dates));
+	public Task<decimal[]> AccumulationFactorsAsync(OrderedDates dates, int start) => Task.Run(() => AccumulationFactors(dates, start));
+	public Task<decimal[]> AccumulationFactorsAsync(OrderedDates dates, int start, int lenght) => Task.Run(() => AccumulationFactors(dates, start, lenght));
+
+	#endregion
+	#region Discount and Accumulation Func
+	private static decimal GetDiscountFactor(AnnualizedRate annualizedRate, decimal numberOfYears)
+		=> annualizedRate.DiscountFactor(numberOfYears);
+	private static decimal GetAccumulationFactor(AnnualizedRate annualizedRate, decimal numberOfYears)
+		=> annualizedRate.AccumulationFactor(numberOfYears);
+	#endregion
+
+
+	private static void GuardAgainstInvalidState(DateOnly calculationDate, IEnumerable<AnnualizedRate> annualizedRates)
+	{
+		Guard.IsNotNull(calculationDate);
+		Guard.IsNotNull(annualizedRates);
+		int numberOfNull = annualizedRates.Count(_ => _ is null);
+		if (numberOfNull > 0)
+			throw new ArgumentNullException(nameof(annualizedRates), $"The rates (IEnumerable<AnnualizedRate>) contains {numberOfNull} non-initialized elements and all element must be initialized");
+	}
+	private decimal[] GetOrCreate(OrderedDates dates, Func<AnnualizedRate, decimal, decimal> accumulationOrDiscountFactor)
+	{
+		int key = HashCode.Combine(dates, GetDiscountFactor);
+		if (!_cache.TryGetValue(key, out decimal[]? result))
+		{
+			result = Factors(dates.AsSpan(), accumulationOrDiscountFactor);
+			_cache.Set(key, 
+				result, 
+				new MemoryCacheEntryOptions().SetSize(1)
+											 .SetSlidingExpiration(TimeSpan.FromSeconds(10))
+											 .SetPriority(CacheItemPriority.Low));
+		}
+		return result!;
+	}
 	private decimal Factor(DateOnly paymentDate, Func<AnnualizedRate, decimal, decimal> accumulationOrDiscountFactor)
 	{
 		if (CalculationDate > paymentDate)
@@ -124,16 +170,4 @@ public class AnnualizedRates : Entity, IAggregateRoot
 		}
 		return factorArray;
 	}
-	private static decimal GetDiscountFactor(AnnualizedRate annualizedRate, decimal numberOfYears)
-		=> annualizedRate.DiscountFactor(numberOfYears);
-	private static decimal GetAccumulationFactor(AnnualizedRate annualizedRate, decimal numberOfYears)
-		=> annualizedRate.AccumulationFactor(numberOfYears);
-
-	public Task<decimal[]> DiscountFactorsAsync(OrderedDates dates) => Task.Run(() => DiscountFactors(dates));
-	public Task<decimal[]> DiscountFactorsAsync(OrderedDates dates, int start) => Task.Run(() => DiscountFactors(dates, start));
-	public Task<decimal[]> DiscountFactorsAsync(OrderedDates dates, int start, int lenght) => Task.Run(() => DiscountFactors(dates, start, lenght));
-	public Task<decimal[]> AccumulationFactorsAsync(OrderedDates dates) => Task.Run(() => AccumulationFactors(dates));
-	public Task<decimal[]> AccumulationFactorsAsync(OrderedDates dates, int start) => Task.Run(() => AccumulationFactors(dates, start));
-	public Task<decimal[]> AccumulationFactorsAsync(OrderedDates dates, int start, int lenght) => Task.Run(() => AccumulationFactors(dates, start, lenght));
-
 }
