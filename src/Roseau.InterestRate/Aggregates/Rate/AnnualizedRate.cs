@@ -78,20 +78,20 @@ public class AnnualizedRate : ValueObject
 		if (calculationDate > paymentDate)
 			throw new ArgumentOutOfRangeException(nameof(paymentDate), $"The calculation date ({calculationDate}) must be a prior date then the payment date ({paymentDate}).");
 		decimal power = Math.Min(NumberOfYears, calculationDate.AgeCalculator(paymentDate));
-		return Mathematics.Mathematics.Pow(1 / (1 + Rate), power);
+		return Maths.Pow(1 / (1 + Rate), power);
 	}
 	public decimal DiscountFactor(decimal numberOfYears)
-		=> Mathematics.Mathematics.Pow(1 / (1 + Rate), Math.Min(numberOfYears, NumberOfYears));
-	public decimal DiscountFactorAtEndOfRatePeriod() => Mathematics.Mathematics.Pow(1 / (1 + Rate), NumberOfYears);
+		=> Maths.Pow(1 / (1 + Rate), Math.Min(numberOfYears, NumberOfYears));
+	public decimal DiscountFactorAtEndOfRatePeriod() => Maths.Pow(1 / (1 + Rate), NumberOfYears);
 
 	public decimal AccumulationFactor(DateOnly calculationDate, DateOnly paymentDate)
 	{
 		if (calculationDate > paymentDate)
 			throw new ArgumentOutOfRangeException(nameof(paymentDate), $"The calculation date ({calculationDate}) must be a prior date then the payment date ({paymentDate}).");
 		decimal power = Math.Min(NumberOfYears, calculationDate.AgeCalculator(paymentDate));
-		return Mathematics.Mathematics.Pow(1 + Rate, power);
+		return Maths.Pow(1 + Rate, power);
 	}
 	public decimal AccumulationFactor(decimal numberOfYears)
-		=> Mathematics.Mathematics.Pow(1 + Rate, Math.Min(numberOfYears, NumberOfYears));
-	public decimal AccumulationFactorAtEndOfRatePeriod() => Mathematics.Mathematics.Pow(1 + Rate, NumberOfYears);
+		=> Maths.Pow(1 + Rate, Math.Min(numberOfYears, NumberOfYears));
+	public decimal AccumulationFactorAtEndOfRatePeriod() => Maths.Pow(1 + Rate, NumberOfYears);
 }

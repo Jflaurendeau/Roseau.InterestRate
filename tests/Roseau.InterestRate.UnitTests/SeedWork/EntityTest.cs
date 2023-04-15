@@ -11,7 +11,7 @@ public class EntityTest
 	{
 		// Arrange
 		Guid id = Guid.NewGuid();
-		DateOnly calculationDate = new DateOnly(2022, 05, 15);
+		DateOnly calculationDate = new(2022, 05, 15);
 		AnnualizedRate[] rates = new AnnualizedRate[]
 		{
 				new(0.01m, 10m),
@@ -31,7 +31,7 @@ public class EntityTest
 	{
 		// Arrange
 		Guid id = Guid.NewGuid();
-		DateOnly calculationDate = new DateOnly(2022, 05, 15);
+		DateOnly calculationDate = new(2022, 05, 15);
 		AnnualizedRate[] rates = new AnnualizedRate[]
 		{
 				new(0.01m, 10m),
@@ -51,7 +51,7 @@ public class EntityTest
 	{
 		// Arrange
 		Guid id = Guid.Empty;
-		DateOnly calculationDate = new DateOnly(2022, 05, 15);
+		DateOnly calculationDate = new(2022, 05, 15);
 		AnnualizedRate[] rates = new AnnualizedRate[]
 		{
 				new(0.01m, 10m),
@@ -71,7 +71,7 @@ public class EntityTest
 	{
 		// Arrange
 		Guid id = Guid.Empty;
-		DateOnly calculationDate = new DateOnly(2022, 05, 15);
+		DateOnly calculationDate = new(2022, 05, 15);
 		AnnualizedRate[] rates = new AnnualizedRate[]
 		{
 				new(0.01m, 10m),
@@ -91,7 +91,7 @@ public class EntityTest
 	{
 		// Arrange
 		Guid id = Guid.Empty;
-		DateOnly calculationDate = new DateOnly(2022, 05, 15);
+		DateOnly calculationDate = new(2022, 05, 15);
 		AnnualizedRate[] rates = new AnnualizedRate[]
 		{
 				new(0.01m, 10m),
@@ -112,7 +112,7 @@ public class EntityTest
 	{
 		// Arrange
 		Guid id = Guid.Empty;
-		DateOnly calculationDate = new DateOnly(2022, 05, 15);
+		DateOnly calculationDate = new(2022, 05, 15);
 		AnnualizedRate[] rates = new AnnualizedRate[]
 		{
 				new(0.01m, 10m),
@@ -121,7 +121,7 @@ public class EntityTest
 				new(0.11m, 14m)
 		};
 		Entity entity = new AnnualizedRates(id, calculationDate, rates);
-		AnnualizedRates entity2 = new AnnualizedRates(id, calculationDate, rates);
+		AnnualizedRates entity2 = new(id, calculationDate, rates);
 
 		// Act
 
@@ -133,7 +133,7 @@ public class EntityTest
 	{
 		// Arrange
 		Guid id = Guid.Empty;
-		DateOnly calculationDate = new DateOnly(2022, 05, 15);
+		DateOnly calculationDate = new(2022, 05, 15);
 		AnnualizedRate[] rates = new AnnualizedRate[]
 		{
 				new(0.01m, 10m),
@@ -142,7 +142,7 @@ public class EntityTest
 				new(0.11m, 14m)
 		};
 		Entity entity = new AnnualizedRates(Guid.NewGuid(), calculationDate, rates);
-		AnnualizedRates entity2 = new AnnualizedRates(id, calculationDate, rates);
+		AnnualizedRates entity2 = new(id, calculationDate, rates);
 
 		// Act
 
@@ -153,8 +153,7 @@ public class EntityTest
 	public void Equals_BothHaveDifferentId_ReturnFalse()
 	{
 		// Arrange
-		Guid id = Guid.NewGuid();
-		DateOnly calculationDate = new DateOnly(2022, 05, 15);
+		DateOnly calculationDate = new(2022, 05, 15);
 		AnnualizedRate[] rates = new AnnualizedRate[]
 		{
 				new(0.01m, 10m),
@@ -163,7 +162,7 @@ public class EntityTest
 				new(0.11m, 14m)
 		};
 		Entity entity = new AnnualizedRates(Guid.NewGuid(), calculationDate, rates);
-		AnnualizedRates entity2 = new AnnualizedRates(Guid.NewGuid(), calculationDate, rates);
+		AnnualizedRates entity2 = new(Guid.NewGuid(), calculationDate, rates);
 
 		// Act
 
@@ -175,7 +174,7 @@ public class EntityTest
 	{
 		// Arrange
 		Guid id = Guid.NewGuid();
-		DateOnly calculationDate = new DateOnly(2022, 05, 15);
+		DateOnly calculationDate = new(2022, 05, 15);
 		AnnualizedRate[] rates = new AnnualizedRate[]
 		{
 				new(0.01m, 10m),
@@ -184,7 +183,7 @@ public class EntityTest
 				new(0.11m, 14m)
 		};
 		Entity entity = new AnnualizedRates(id, calculationDate, rates);
-		AnnualizedRates entity2 = new AnnualizedRates(id, calculationDate, rates);
+		AnnualizedRates entity2 = new(id, calculationDate, rates);
 
 		// Act
 
@@ -196,7 +195,7 @@ public class EntityTest
 	{
 		// Arrange
 		Guid id = Guid.NewGuid();
-		DateOnly calculationDate = new DateOnly(2022, 05, 15);
+		DateOnly calculationDate = new(2022, 05, 15);
 		AnnualizedRate[] rates = new AnnualizedRate[]
 		{
 				new(0.01m, 10m),
@@ -216,7 +215,7 @@ public class EntityTest
 	{
 		// Arrange
 		Guid id = Guid.Empty;
-		DateOnly calculationDate = new DateOnly(2022, 05, 15);
+		DateOnly calculationDate = new(2022, 05, 15);
 		AnnualizedRate[] rates = new AnnualizedRate[]
 		{
 				new(0.01m, 10m),

@@ -108,15 +108,15 @@ public class AnnualizedRatesTest
 		 * expected-4: 0.1958835174675591391235347413M
 		*/
 		// Act
-		expectedDiscountRateArray[0] = Mathematics.Mathematics.Pow(1 / (1 + rates[0].Rate), 9);
+		expectedDiscountRateArray[0] = Maths.Pow(1 / (1 + rates[0].Rate), 9);
 		expectedDiscountRateArray[1] = 0.7639854290932546905805390548M;
 		expectedDiscountRateArray[2] = 0.6882751613452744960185036530M;
-		expectedDiscountRateArray[3] = Mathematics.Mathematics.Pow(1 / (1 + rates[0].Rate), 10) * Mathematics.Mathematics.Pow(1 / (1 + rates[1].Rate), 1 / 24m) * Mathematics.Mathematics.Pow(1 / (1 + rates[2].Rate), 1m) * Mathematics.Mathematics.Pow(1 / (1 + rates[3].Rate), 14m);
+		expectedDiscountRateArray[3] = Maths.Pow(1 / (1 + rates[0].Rate), 10) * Maths.Pow(1 / (1 + rates[1].Rate), 1 / 24m) * Maths.Pow(1 / (1 + rates[2].Rate), 1m) * Maths.Pow(1 / (1 + rates[3].Rate), 14m);
 		calculatedDiscountRateArray = annualizedRates.DiscountFactors(dates);
 		decimal difference = 0;
 		for (int i = 0; i < expectedDiscountRateArray.Length; i++)
 			difference += Math.Abs(expectedDiscountRateArray[i] - calculatedDiscountRateArray[i]);
-		var differenceIsInMarginOrError = difference <= 2 * Mathematics.Mathematics.Epsilon;
+		var differenceIsInMarginOrError = difference <= 2 * Maths.Epsilon;
 
 		// Assert
 		Assert.IsTrue(differenceIsInMarginOrError);
@@ -187,7 +187,7 @@ public class AnnualizedRatesTest
 		for (int i = 0; i < expectedFactor.Length; i++)
 		{
 			difference = factor[i] - expectedFactor[i];
-			differenceIsInMarginOrError = difference <= 2 * Mathematics.Mathematics.Epsilon;
+			differenceIsInMarginOrError = difference <= 2 * Maths.Epsilon;
 			Assert.IsTrue(differenceIsInMarginOrError);
 		}
 
@@ -308,7 +308,7 @@ public class AnnualizedRatesTest
 		for (int i = 0; i < expectedFactor.Length; i++)
 		{
 			difference = factor[i] - expectedFactor[i];
-			differenceIsInMarginOrError = difference <= 2 * Mathematics.Mathematics.Epsilon;
+			differenceIsInMarginOrError = difference <= 2 * Maths.Epsilon;
 			Assert.IsTrue(differenceIsInMarginOrError);
 		}
 
@@ -349,7 +349,7 @@ public class AnnualizedRatesTest
 		for (int i = 0; i < expectedFactor.Length; i++)
 		{
 			difference = factor[i] - expectedFactor[i];
-			differenceIsInMarginOrError = difference <= 10 * Mathematics.Mathematics.Epsilon;
+			differenceIsInMarginOrError = difference <= 10 * Maths.Epsilon;
 			Assert.IsTrue(differenceIsInMarginOrError);
 		}
 	}

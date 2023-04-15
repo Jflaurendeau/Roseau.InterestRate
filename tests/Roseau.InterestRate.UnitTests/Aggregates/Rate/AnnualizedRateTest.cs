@@ -49,7 +49,7 @@ public class AnnualizedRateTest
 		// Arrange
 		decimal rate = 0.01m;
 		decimal years = 10;
-		AnnualizedRate annualizedRate = new AnnualizedRate(rate, years);
+		AnnualizedRate annualizedRate = new(rate, years);
 		DateOnly calculationDate = new(2000, 1, 1);
 		DateOnly paymentDate = calculationDate.AddYears((int)years);
 		decimal exactDiscountFactor = Decimal.One;
@@ -70,8 +70,8 @@ public class AnnualizedRateTest
 		// Arrange
 		decimal rate = 0.01m;
 		decimal years = 10;
-		AnnualizedRate annualizedRate = new AnnualizedRate(rate, years);
-		AnnualizedRate annualizedRate2 = new AnnualizedRate(rate, years);
+		AnnualizedRate annualizedRate = new(rate, years);
+		AnnualizedRate annualizedRate2 = new(rate, years);
 
 		// Act
 
@@ -84,8 +84,8 @@ public class AnnualizedRateTest
 		// Arrange
 		decimal rate = 0.01m;
 		decimal years = 10;
-		AnnualizedRate annualizedRate = new AnnualizedRate(rate, years);
-		AnnualizedRate annualizedRate2 = new AnnualizedRate(rate, years+1);
+		AnnualizedRate annualizedRate = new(rate, years);
+		AnnualizedRate annualizedRate2 = new(rate, years+1);
 
 		// Act
 
@@ -110,7 +110,7 @@ public class AnnualizedRateTest
 		exactDiscountFactor = 0.995037190209989135665273753738571899697m; // ... = 1.01^-0.5 sur Wolfram
 		testDiscountFactor = annualizedRate.DiscountFactor(calculationDate, paymentDate);
 		difference = Math.Abs(exactDiscountFactor - testDiscountFactor); // Différence peut être causé par les arrondis machines
-		differenceIsInMarginOrError = difference <= 2 * Mathematics.Mathematics.Epsilon;
+		differenceIsInMarginOrError = difference <= 2 * Maths.Epsilon;
 
 		// Assert
 		Assert.IsTrue(differenceIsInMarginOrError);
@@ -133,7 +133,7 @@ public class AnnualizedRateTest
 		exactDiscountFactor = 0.953462589245592315446775921527215998613883506m; // ... = 1.1^-0.5 sur Wolfram
 		testDiscountFactor = annualizedRate.DiscountFactor(calculationDate, paymentDate);
 		difference = Math.Abs(exactDiscountFactor - testDiscountFactor); // Différence peut être causé par les arrondis machines
-		differenceIsInMarginOrError = difference <= 2 * Mathematics.Mathematics.Epsilon;
+		differenceIsInMarginOrError = difference <= 2 * Maths.Epsilon;
 
 		// Assert
 		Assert.IsTrue(differenceIsInMarginOrError);
@@ -156,7 +156,7 @@ public class AnnualizedRateTest
 		exactDiscountFactor = 0.99751550875662536521326534126147377214732017172763m; // ... = 1.01^-0.25 sur Wolfram
 		testDiscountFactor = rateDefault.DiscountFactor(calculationDate, paymentDate);
 		difference = Math.Abs(exactDiscountFactor - testDiscountFactor); // Différence peut être causé par les arrondis machines
-		differenceIsInMarginOrError = difference <= 2 * Mathematics.Mathematics.Epsilon;
+		differenceIsInMarginOrError = difference <= 2 * Maths.Epsilon;
 
 		// Assert
 		Assert.IsTrue(differenceIsInMarginOrError);
@@ -179,7 +179,7 @@ public class AnnualizedRateTest
 		exactDiscountFactor = 0.976454089676310544893104527925023643152860997m; // ... = 1.1^-0.25 sur Wolfram
 		testDiscountFactor = rateDefault.DiscountFactor(calculationDate, paymentDate);
 		difference = Math.Abs(exactDiscountFactor - testDiscountFactor); // Différence peut être causé par les arrondis machines
-		differenceIsInMarginOrError = difference <= 2 * Mathematics.Mathematics.Epsilon;
+		differenceIsInMarginOrError = difference <= 2 * Maths.Epsilon;
 
 		// Assert
 		Assert.IsTrue(differenceIsInMarginOrError);
@@ -202,7 +202,7 @@ public class AnnualizedRateTest
 		exactDiscountFactor = 0.999171149448777100086916245948279920437642033m; // ... = 1.01^-(1/12) sur Wolfram
 		testDiscountFactor = rateDefault.DiscountFactor(calculationDate, paymentDate);
 		difference = Math.Abs(exactDiscountFactor - testDiscountFactor); // Différence peut être causé par les arrondis machines
-		differenceIsInMarginOrError = difference <= 2 * Mathematics.Mathematics.Epsilon;
+		differenceIsInMarginOrError = difference <= 2 * Maths.Epsilon;
 
 		// Assert
 		Assert.IsTrue(differenceIsInMarginOrError);
@@ -225,7 +225,7 @@ public class AnnualizedRateTest
 		exactDiscountFactor = 0.99208894344699095225333725606900033855667734863m; // ... = 1.1^-(1/12) sur Wolfram
 		testDiscountFactor = rateDefault.DiscountFactor(calculationDate, paymentDate);
 		difference = Math.Abs(exactDiscountFactor - testDiscountFactor); // Différence peut être causé par les arrondis machines
-		differenceIsInMarginOrError = difference <= 2 * Mathematics.Mathematics.Epsilon;
+		differenceIsInMarginOrError = difference <= 2 * Maths.Epsilon;
 
 		// Assert
 		Assert.IsTrue(differenceIsInMarginOrError);
@@ -248,7 +248,7 @@ public class AnnualizedRateTest
 		exactDiscountFactor = 1.00797414042890374106603184422323033318250514514m; // ... = 1.1^(1/12) sur Wolfram
 		testDiscountFactor = rateDefault.AccumulationFactor(calculationDate, paymentDate);
 		difference = Math.Abs(exactDiscountFactor - testDiscountFactor); // Différence peut être causé par les arrondis machines
-		differenceIsInMarginOrError = difference <= 2 * Mathematics.Mathematics.Epsilon;
+		differenceIsInMarginOrError = difference <= 2 * Maths.Epsilon;
 
 		// Assert
 		Assert.IsTrue(differenceIsInMarginOrError);
@@ -276,10 +276,10 @@ public class AnnualizedRateTest
 	{
 		// Arrange
 		decimal rate = 0.01m;
-		AnnualizedRate annualizedRate = new AnnualizedRate(rate, Convert.ToDecimal(years));
+		AnnualizedRate annualizedRate = new(rate, Convert.ToDecimal(years));
 
 		// Act
-		decimal expected = Mathematics.Mathematics.Pow(1 / (1 + rate), Convert.ToDecimal(years));
+		decimal expected = Maths.Pow(1 / (1 + rate), Convert.ToDecimal(years));
 		decimal actual = annualizedRate.DiscountFactorAtEndOfRatePeriod();
 
 		// Assert
@@ -294,10 +294,10 @@ public class AnnualizedRateTest
 	{
 		// Arrange
 		decimal rate = 0.01m;
-		AnnualizedRate annualizedRate = new AnnualizedRate(rate, Convert.ToDecimal(years));
+		AnnualizedRate annualizedRate = new(rate, Convert.ToDecimal(years));
 
 		// Act
-		decimal expected = Mathematics.Mathematics.Pow(1 + rate, Convert.ToDecimal(years));
+		decimal expected = Maths.Pow(1 + rate, Convert.ToDecimal(years));
 		decimal actual = annualizedRate.AccumulationFactorAtEndOfRatePeriod();
 
 		// Assert
